@@ -5,7 +5,7 @@
 | 1 | ZHIXUAN ZHAO | S394187 | EvanZhao |
 | 2 | JIEAN ZENG | S395315 | gianzeng |
 | 3 |  |  |  |
-| 4 |  |  |  |
+| 4 |  YI XIE | S396421 | xieyi0220 |
 
 
 # Question 1
