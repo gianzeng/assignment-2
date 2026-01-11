@@ -89,6 +89,77 @@ def process_seasonal_average(records):
         f.write('\n'.join(output_lines))
     print("Task 1 Done: average_temp.txt created.")
 
+def process_temperature_range(records):
+    """Task 2: Largest Range (Max - Min) per station"""
+    station_temps = defaultdict(list)
+    
+    for r in records:
+        station_temps[r['STATION_NAME']].append(r['Temperature'])
+        
+    max_range = -1
+    target_stations = []
+    
+    # First pass: find max range
+    station_ranges = {}
+    
+    for station, temps in station_temps.items():
+        if not temps: continue
+        t_max = max(temps)
+        t_min = min(temps)
+        rng = t_max - t_min
+        station_ranges[station] = (rng, t_max, t_min)
+        
+        if rng > max_range:
+            max_range = rng
+            
+    # Second pass: collect all with max range
+    for station, (rng, t_max, t_min) in station_ranges.items():
+        # Float comparison tolerance
+        if abs(rng - max_range) < 1e-9:
+            target_stations.append((station, rng, t_max, t_min))
+            
+    output_lines = []
+    for station, rng, t_max, t_min in target_stations:
+        output_lines.append(f"{station}: Range {rng:.1f}°C (Max: {t_max:.1f}°C, Min: {t_min:.1f}°C)")
+        
+    with open('largest_temp_range_station.txt', 'w', encoding='utf-8') as f:
+        f.write('\n'.join(output_lines))
+    print("Task 2 Done: largest_temp_range_station.txt created.")
+
+def process_temperature_stability(records):
+    """Task 3: Stability (StdDev)"""
+    station_temps = defaultdict(list)
+    for r in records:
+        station_temps[r['STATION_NAME']].append(r['Temperature'])
+        
+    station_stds = {}
+    for station, temps in station_temps.items():
+        if len(temps) > 1:
+            station_stds[station] = calculate_std(temps)
+            
+    if not station_stds:
+        print("Not enough data for stability analysis.")
+        return
+
+    # Find Min and Max Std
+    min_std = min(station_stds.values())
+    max_std = max(station_stds.values())
+    
+    most_stable = [s for s, v in station_stds.items() if abs(v - min_std) < 1e-9]
+    most_variable = [s for s, v in station_stds.items() if abs(v - max_std) < 1e-9]
+    
+    output_lines = []
+    
+    for s in most_stable:
+        output_lines.append(f"Most Stable: {s}: StdDev {min_std:.1f}°C")
+        
+    for s in most_variable:
+        output_lines.append(f"Most Variable: {s}: StdDev {max_std:.1f}°C")
+        
+    with open('temperature_stability_stations.txt', 'w', encoding='utf-8') as f:
+        f.write('\n'.join(output_lines))
+    print("Task 3 Done: temperature_stability_stations.txt created.")
+
 def main():
     print("HIT137 Assignment 2 - Question 2 (Standard Lib)")
     folder = 'temperatures'
@@ -100,6 +171,8 @@ def main():
     records = load_data(folder)
     if records:
         process_seasonal_average(records)
+        process_temperature_range(records)
+        process_temperature_stability(records)
         print("All tasks completed.")
     else:
         print("No records found.")
